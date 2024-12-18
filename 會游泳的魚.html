@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>會游泳的魚</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #a0c4ff;
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+        }
+
+        .game-over {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3em;
+            color: red;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <div class="game-over" id="gameOverText" style="display: none;">遊戲結束！分數：<span id="finalScore"></span></div>
+
+    <script>
+        // 設定畫布
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // 遊戲狀態
+        let fishSize = 30;
+        let fishSpeed = 2;
+        let score = 0;
+        let gameOver = false;
+
+        // 魚類物件
+        const fish = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            width: fishSize,
+            height: fishSize,
+            color: "#00aaff",
+            dx: 0,
+            dy: 0
+        };
+
+        // 其他魚物件
+        const smallFishArray = [];
+        const deadlyFishArray = [];
+        
+        // 魚的移動和控制
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "ArrowUp") fish.dy = -fishSpeed;
+            if (event.key === "ArrowDown") fish.dy = fishSpeed;
+            if (event.key === "ArrowLeft") fish.dx = -fishSpeed;
+            if (event.key === "ArrowRight") fish.dx = fishSpeed;
+        });
+
+        document.addEventListener("keyup", (event) => {
+            if (event.key === "ArrowUp" || event.key === "ArrowDown") fish.dy = 0;
+            if (event.key === "ArrowLeft" || event.key === "ArrowRight") fish.dx = 0;
+        });
+
+        // 隨機生成魚
+        function generateFish() {
+            const smallFish = {
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                width: Math.random() * 10 + 10,
+                height: Math.random() * 10 + 10,
+                color: "#66cc66",
+                isDeadly: false
+            };
+            smallFishArray.push(smallFish);
+
+            const deadlyFish = {
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                width: Math.random() * 30 + 20,
+                height: Math.random() * 30 + 20,
+                color: "#ff3333",
+                isDeadly: true
+            };
+            deadlyFishArray.push(deadlyFish);
+        }
+
+        // 更新畫面
+        function updateGame() {
+            if (gameOver) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // 繪製魚
+            ctx.fillStyle = fish.color;
+            ctx.fillRect(fish.x, fish.y, fish.width, fish.height);
+
+            // 移動魚
+            fish.x += fish.dx;
+            fish.y += fish.dy;
+
+            // 防止魚超出邊界
+            if (fish.x < 0) fish.x = 0;
+            if (fish.x + fish.width > canvas.width) fish.x = canvas.width - fish.width;
+            if (fish.y < 0) fish.y = 0;
+            if (fish.y + fish.height > canvas.height) fish.y = canvas.height - fish.height;
+
+            // 生成魚
+            if (Math.random() < 0.02) {
+                generateFish();
+            }
+
+            // 繪製其他魚
+            smallFishArray.forEach((smallFish, index) => {
+                ctx.fillStyle = smallFish.color;
+                ctx.fillRect(smallFish.x, smallFish.y, smallFish.width, smallFish.height);
+
+                // 移動魚
+                smallFish.x += Math.random() * 2 - 1;
+                smallFish.y += Math.random() * 2 - 1;
+
+                // 檢查碰撞
+                if (
+                    fish.x < smallFish.x + smallFish.width &&
+                    fish.x + fish.width > smallFish.x &&
+                    fish.y < smallFish.y + smallFish.height &&
+                    fish.y + fish.height > smallFish.y
+                ) {
+                    if (smallFish.width < fish.width) {
+                        // 吃掉小魚，增加分數
+                        score++;
+                        smallFishArray.splice(index, 1);
+                        fish.width += 2;
+                        fish.height += 2;
+                    }
+                }
+            });
+
+            // 繪製特殊魚
+            deadlyFishArray.forEach((deadlyFish) => {
+                ctx.fillStyle = deadlyFish.color;
+                ctx.fillRect(deadlyFish.x, deadlyFish.y, deadlyFish.width, deadlyFish.height);
+
+                // 檢查碰撞
+                if (
+                    fish.x < deadlyFish.x + deadlyFish.width &&
+                    fish.x + fish.width > deadlyFish.x &&
+                    fish.y < deadlyFish.y + deadlyFish.height &&
+                    fish.y + fish.height > deadlyFish.y
+                ) {
+                    // 撞到致命魚，遊戲結束
+                    gameOver = true;
+                    document.getElementById("finalScore").textContent = score;
+                    document.getElementById("gameOverText").style.display = "block";
+                }
+            });
+
+            // 更新分數並加快速度
+            if (score % 5 === 0) {
+                fishSpeed = 2 + Math.floor(score / 10);
+            }
+
+            // 繼續遊戲
+            if (!gameOver) {
+                requestAnimationFrame(updateGame);
+            }
+        }
+
+        // 開始遊戲
+        updateGame();
+    </script>
+</body>
+</html>
