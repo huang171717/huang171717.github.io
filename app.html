@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>睡眠品質追蹤App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f8ff;
+            color: #333;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+        }
+        h1 {
+            margin: 0;
+        }
+        .container {
+            padding: 20px;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            padding: 20px;
+        }
+        .card h2 {
+            margin-top: 0;
+        }
+        .sleep-record, .sleep-feedback {
+            font-size: 1.2em;
+        }
+        .input-box {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        input[type="number"], input[type="time"] {
+            padding: 8px;
+            font-size: 1em;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        .btn {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        footer {
+            text-align: center;
+            padding: 10px;
+            background-color: #333;
+            color: white;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>睡眠品質追蹤</h1>
+</header>
+
+<div class="container">
+    <!-- 睡眠記錄區 -->
+    <div class="card">
+        <h2>睡眠記錄</h2>
+        <div>
+            <label for="sleep-time">昨晚睡眠時間 (小時):</label>
+            <input type="number" id="sleep-time" placeholder="例如: 7.5" min="0" step="0.1">
+        </div>
+        <button class="btn" onclick="saveSleepData()">儲存睡眠資料</button>
+    </div>
+
+    <!-- 睡眠建議區 -->
+    <div class="card" id="sleep-feedback-card" style="display: none;">
+        <h2>睡眠建議</h2>
+        <p id="sleep-feedback"></p>
+    </div>
+
+    <!-- 睡眠目標設置 -->
+    <div class="card">
+        <h2>睡眠目標</h2>
+        <div class="input-box">
+            <label for="sleep-goal">設定睡眠目標 (小時):</label>
+            <input type="number" id="sleep-goal" placeholder="例如: 8" min="0" step="0.1">
+        </div>
+        <button class="btn" onclick="setSleepGoal()">設定目標</button>
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2024 睡眠品質追蹤App. All rights reserved.</p>
+</footer>
+
+<script>
+    // 儲存並顯示睡眠數據
+    function saveSleepData() {
+        const sleepTime = parseFloat(document.getElementById("sleep-time").value);
+        if (isNaN(sleepTime) || sleepTime <= 0) {
+            alert("請輸入有效的睡眠時間！");
+            return;
+        }
+        localStorage.setItem("sleep-time", sleepTime);  // 儲存數據
+        showSleepFeedback(sleepTime);
+    }
+
+    // 顯示睡眠建議
+    function showSleepFeedback(sleepTime) {
+        const sleepFeedbackCard = document.getElementById("sleep-feedback-card");
+        const feedbackText = document.getElementById("sleep-feedback");
+
+        let feedback = "";
+        if (sleepTime < 6) {
+            feedback = "睡眠時間太短，建議增加睡眠時間以提高健康水平。";
+        } else if (sleepTime < 8) {
+            feedback = "睡眠時間偏少，考慮調整作息以確保充分休息。";
+        } else {
+            feedback = "睡眠時間充足，繼續保持良好的作息！";
+        }
+
+        feedbackText.innerText = feedback;
+        sleepFeedbackCard.style.display = "block"; // 顯示建議卡片
+    }
+
+    // 設置睡眠目標
+    function setSleepGoal() {
+        const sleepGoal = parseFloat(document.getElementById("sleep-goal").value);
+        if (isNaN(sleepGoal) || sleepGoal <= 0) {
+            alert("請輸入有效的睡眠目標！");
+            return;
+        }
+        localStorage.setItem("sleep-goal", sleepGoal);
+        alert("睡眠目標已設定為 " + sleepGoal + " 小時！");
+    }
+</script>
+
+</body>
+</html>
